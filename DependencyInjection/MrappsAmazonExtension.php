@@ -21,6 +21,11 @@ class MrappsAmazonExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+        
+        $container->setParameter('mrapps_amazon.parameters.access', $config['parameters']['access']);
+        $container->setParameter('mrapps_amazon.parameters.secret', $config['parameters']['secret']);
+        $container->setParameter('mrapps_amazon.parameters.region', $config['parameters']['region']);
+        $container->setParameter('mrapps_amazon.parameters.default_bucket', $config['parameters']['default_bucket']);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');

@@ -21,10 +21,10 @@ class S3Handler
     private function getParams() {
         
         return array(
-            'access' => ($this->container->hasParameter('amazon_access_key')) ? $this->container->getParameter('amazon_access_key') : '',
-            'secret' => ($this->container->hasParameter('amazon_secret_key')) ? $this->container->getParameter('amazon_secret_key') : '',
-            'region' => ($this->container->hasParameter('amazon_region')) ? $this->container->getParameter('amazon_region') : '',
-            'bucket' => ($this->container->hasParameter('amazon_s3_bucket')) ? $this->container->getParameter('amazon_s3_bucket') : '',
+            'access' => ($this->container->hasParameter('mrapps_amazon.parameters.access')) ? $this->container->getParameter('mrapps_amazon.parameters.access') : '',
+            'secret' => ($this->container->hasParameter('mrapps_amazon.parameters.secret')) ? $this->container->getParameter('mrapps_amazon.parameters.secret') : '',
+            'region' => ($this->container->hasParameter('mrapps_amazon.parameters.region')) ? $this->container->getParameter('mrapps_amazon.parameters.region') : '',
+            'bucket' => ($this->container->hasParameter('mrapps_amazon.parameters.default_bucket')) ? $this->container->getParameter('mrapps_amazon.parameters.default_bucket') : '',
         );
     }
     
