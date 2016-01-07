@@ -1,0 +1,33 @@
+{
+    "name" : "mrapps/amazonbundle",
+    "description" : "Bundle Symfony2 per usare i servizi Amazon (S3, SNS, ecc.)",
+    "type" : "symfony-bundle",
+    "authors" : [{
+        "name" : "Mr.APPs srl",
+        "email" : "info@mr-apps.com"
+    }],
+    "keywords" : [
+        "mrapps amazon s3 sns bundle"
+    ],
+    "license" : [
+        "MIT"
+    ],
+    "require" : {
+        "php": ">=5.3.9",
+        "symfony/symfony": "2.7.*",
+        "aws/aws-sdk-php": "2.8.*@dev"
+    },
+    "autoload" : {
+        "psr-0" : {
+            "Mrapps\\AmazonBundle" : ""
+        }
+    },
+    "target-dir" : "Mrapps/AmazonBundle",
+    "repositories" : [{
+    }],
+    "extra" : {
+    "branch-alias" : {
+            "dev-master" : "0.1-dev"
+        }
+    }
+}
