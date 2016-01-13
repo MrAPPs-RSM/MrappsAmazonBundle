@@ -125,7 +125,7 @@ class S3Handler
             
             if(strlen($bucket) == 0) $bucket = $params['bucket'];
             
-            if($this->objectExists($key)) {
+            if($this->objectExists($key, $bucket)) {
                 
                 $result = $client->getObject(array(
                     'Bucket' => $bucket,
