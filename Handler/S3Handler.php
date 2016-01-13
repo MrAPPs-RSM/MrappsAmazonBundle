@@ -39,14 +39,17 @@ class S3Handler
         ));
     }
     
-    public function objectExists($key = '') {
+    public function objectExists($key, $bucket = '') {
         
         $key = trim($key);
+        $bucket = trim($bucket);
         if(strlen($key) > 0) {
             $params = $this->getParams();
             $client = $this->getClient();
+            
+            if(strlen($bucket) == 0) $bucket = $params['bucket'];
 
-            return $client->doesObjectExist($params['bucket'], $key);
+            return $client->doesObjectExist($bucket, $key);
         }
         
         return false;
@@ -71,6 +74,38 @@ class S3Handler
             //Aggiornamento etag Database
             $etag = $this->getEtagForKey($key);
             $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($key, $etag);
+            
+        } catch (\Exception $ex) {
+            $result = array();
+        }
+        
+        return $result;
+    }
+    
+    public function copyObject($source, $dest, $sourceBucket = '', $destBucket = '') {
+        
+        $params = $this->getParams();
+        $client = $this->getClient();
+        
+        if(strlen($sourceBucket) == 0) $sourceBucket = $params['bucket'];
+        if(strlen($destBucket) == 0) $destBucket = $params['bucket'];
+        
+        try {
+            if($this->objectExists($source, $sourceBucket)) {
+                
+                $copySource = sprintf("%s/%s", $sourceBucket, $source);
+                $result = $client->copyObject(array(
+                    'Bucket' => $destBucket,
+                    'CopySource' => $copySource,
+                    'Key' => $dest,
+                ))->toArray();
+                
+                $client->waitUntilObjectExists(array('Bucket' => $destBucket, 'Key' => $dest));
+                
+                //Aggiornamento etag Database
+                $etag = $this->getEtagForKey($dest);
+                $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($dest, $etag);
+            }
             
         } catch (\Exception $ex) {
             $result = array();
