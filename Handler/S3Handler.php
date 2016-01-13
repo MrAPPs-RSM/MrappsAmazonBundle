@@ -114,18 +114,21 @@ class S3Handler
         return $result;
     }
     
-    public function getObjectContent($key = '') {
+    public function getObjectContent($key = '', $bucket = '') {
         
         $key = trim($key);
+        $bucket = trim($bucket);
         if(strlen($key) > 0) {
             
             $params = $this->getParams();
             $client = $this->getClient();
             
+            if(strlen($bucket) == 0) $bucket = $params['bucket'];
+            
             if($this->objectExists($key)) {
                 
                 $result = $client->getObject(array(
-                    'Bucket' => $params['bucket'],
+                    'Bucket' => $bucket,
                     'Key'    => $key,
                 ));
                 
