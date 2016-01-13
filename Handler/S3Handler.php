@@ -230,4 +230,50 @@ class S3Handler
         
         return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath)) ? $this->createObject($key, file_get_contents($filePath), $acl) : array();
     }
+    
+    public function listObjectsInBucket($bucket = '') {
+        
+        $params = $this->getParams();
+        $client = $this->getClient();
+        
+        $bucket = trim($bucket);
+        if(strlen($bucket) == 0) $bucket = $params['bucket'];
+        
+        $output = array();
+        
+        try {
+
+            $marker = null;
+            do {
+                
+                $input = array('Bucket' => $bucket);
+                if($marker !== null) $input['Marker'] = $marker;
+                
+                $lastKey = '';
+                $response = $client->listObjects($input)->toArray();
+                if(isset($response['Contents'])) {
+                    
+                    foreach ($response['Contents'] as $r) {
+                        $output[] = array(
+                            'Key' => $r['Key'],
+                            'ETag' => str_replace('"', '', $r['ETag']),
+                        );
+                        $lastKey = $r['Key'];
+                    }
+                }
+                
+                if(isset($response['IsTruncated']) && $response['IsTruncated'] && strlen($lastKey) > 0) {
+                    $marker = $lastKey;
+                    $continueLoop = true;
+                }else {
+                    $continueLoop = false;
+                }
+                
+            }while($continueLoop);
+
+        } catch (\Exception $ex) {
+        }
+        
+        return $output;
+    }
 }
