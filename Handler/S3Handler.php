@@ -56,18 +56,22 @@ class S3Handler
         
     }
     
-    public function createObject($key = '', $content = '', $acl = 'public-read') {
+    public function createObject($key = '', $content = '', $options = array()) {
         
         $params = $this->getParams();
         $client = $this->getClient();
         
         try {
-            $result = $client->putObject(array(
+            
+            //Fix opzioni in ingresso
+            if(!is_array($options)) $options = array();
+            if(!isset($options['ACL'])) $options['ACL'] = 'public-read';
+            
+            $result = $client->putObject(array_merge($options, array(
                 'Bucket' => $params['bucket'],
                 'Key'    => $key,
                 'Body'   => $content,
-                'ACL'    => $acl,
-            ))->toArray();
+            )))->toArray();
             
             $client->waitUntilObjectExists(array('Bucket' => $params['bucket'], 'Key' => $key));
             
