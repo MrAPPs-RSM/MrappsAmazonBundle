@@ -56,6 +56,27 @@ class S3Handler
         
     }
     
+    public function headObject($key, $bucket = '') {
+        
+        $key = trim($key);
+        $bucket = trim($bucket);
+        if(strlen($key) > 0) {
+            $params = $this->getParams();
+            $client = $this->getClient();
+            
+            if(strlen($bucket) == 0) $bucket = $params['bucket'];
+            
+            if($this->objectExists($key, $bucket)) {
+                return $client->headObject(array(
+                    'Bucket' => $bucket,
+                    'Key' => $key,
+                ))->toArray();
+            }
+        }
+        
+        return null;
+    }
+    
     public function createObject($key = '', $content = '', $options = array()) {
         
         $params = $this->getParams();
