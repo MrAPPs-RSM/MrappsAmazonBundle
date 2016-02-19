@@ -256,12 +256,13 @@ class S3Handler
         return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath)) ? $this->createObject($key, file_get_contents($filePath), $acl) : array();
     }
     
-    public function listObjectsInBucket($bucket = '') {
+    public function listObjectsInBucket($bucket = null, $prefix = '') {
         
         $params = $this->getParams();
         $client = $this->getClient();
         
         $bucket = trim($bucket);
+        $prefix = trim($prefix);
         if(strlen($bucket) == 0) $bucket = $params['bucket'];
         
         $output = array();
@@ -273,6 +274,7 @@ class S3Handler
                 
                 $input = array('Bucket' => $bucket);
                 if($marker !== null) $input['Marker'] = $marker;
+                if(strlen($prefix) > 0) $input['Prefix'] = $prefix;
                 
                 $lastKey = '';
                 $response = $client->listObjects($input)->toArray();
