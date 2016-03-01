@@ -30,6 +30,12 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('default_bucket')->defaultValue('')->end()
                     ->end()
                 ->end()
+                ->arrayNode('cdn')
+                    ->children()
+                        ->booleanNode('enable')->defaultValue(false)->end()
+                        ->scalarNode('url')->defaultValue('')->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

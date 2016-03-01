@@ -164,14 +164,23 @@ class S3Handler
         return '';
     }
     
-    public function getObjectUrl($key = '', $force = false) {
+    public function getObjectUrl($key = '', $force = false, $ignoreCdn = false) {
         
         $key = trim($key);
         if(strlen($key) > 0) {
             $params = $this->getParams();
             $client = $this->getClient();
 
-            return ((bool)$force || $client->doesObjectExist($params['bucket'], $key)) ? $client->getObjectUrl($params['bucket'], $key) : '';
+            //CDN params
+            $enableCdn = ($this->container->hasParameter('mrapps_amazon.cdn.enable')) ? (bool)$this->container->getParameter('mrapps_amazon.cdn.enable') : false;
+            $urlCdn = ($this->container->hasParameter('mrapps_amazon.cdn.url')) ? trim($this->container->getParameter('mrapps_amazon.cdn.url'),'/') : '';
+
+            $cdnEnabled = ($enableCdn && !$ignoreCdn && strlen($urlCdn) > 0);
+            if($cdnEnabled) {
+                return $urlCdn.'/'.$key;
+            } else {
+                return ((bool)$force || $client->doesObjectExist($params['bucket'], $key)) ? $client->getObjectUrl($params['bucket'], $key) : '';
+            }
         }
         
         return '';
