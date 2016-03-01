@@ -31,6 +31,7 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->arrayNode('cdn')
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('enable')->defaultValue(false)->end()
                         ->scalarNode('url')->defaultValue('')->end()
