@@ -185,6 +185,43 @@ class S3Handler
         
         return '';
     }
+
+    public function getFilterUrl(Request $request = null, $key = '', $filter = '')
+    {
+
+        $key = trim($key);
+        if (strlen($key) > 0) {
+            $params = $this->getParams();
+
+            $urlDomain = "https://s3-" . $params["region"] . ".amazonaws.com/" . $params["bucket"];
+
+            //CDN params
+            $enableCdn = ($this->container->hasParameter('mrapps_amazon.cdn.enable')) ? (bool)$this->container->getParameter('mrapps_amazon.cdn.enable') : false;
+            $urlCdn = ($this->container->hasParameter('mrapps_amazon.cdn.url')) ? trim($this->container->getParameter('mrapps_amazon.cdn.url'), '/') : '';
+
+            // RedirectResponse object
+            $imagemanagerResponse = $this->container
+                ->get('liip_imagine.controller')
+                ->filterAction(
+                    $request,
+                    $key,      // original image you want to apply a filter to
+                    $filter              // filter defined in config.yml
+                );
+
+            // string to put directly in the "src" of the tag <img>
+            $absoluteUrl = $imagemanagerResponse->headers->get('location');
+
+
+            $cdnEnabled = ($enableCdn && strlen($urlCdn) > 0);
+            if ($cdnEnabled) {
+                return str_replace($urlDomain, $urlCdn, $absoluteUrl);
+            } else {
+                return $absoluteUrl;
+            }
+        }
+
+        return '';
+    }
     
     public function getEtagForKey($key = '') {
         
