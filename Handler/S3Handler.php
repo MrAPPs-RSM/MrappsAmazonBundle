@@ -276,8 +276,8 @@ class S3Handler
 
     public function downloadObject($key = '', $savePath = '', $returnCompleteResponse = false, $bucket = '')
     {
-
         $key = trim($key);
+        $bucket = trim($bucket);
         $savePath = trim($savePath);
 
         if (strlen($key) > 0 && strlen($savePath) > 0) {
@@ -285,10 +285,9 @@ class S3Handler
             $params = $this->getParams();
             $client = $this->getClient();
 
-            if ($this->objectExists($key)) {
+            if(strlen($bucket) == 0) $bucket = $params['bucket'];
 
-                $bucket = trim($bucket);
-                if(strlen($bucket) == 0) $bucket = $params['bucket'];
+            if ($this->objectExists($key, $bucket)) {
 
                 try {
 
