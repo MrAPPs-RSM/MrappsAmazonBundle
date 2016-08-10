@@ -274,7 +274,7 @@ class S3Handler
         return $etag;
     }
 
-    public function downloadObject($key = '', $savePath = '', $returnCompleteResponse = false)
+    public function downloadObject($key = '', $savePath = '', $returnCompleteResponse = false, $bucket = '')
     {
 
         $key = trim($key);
@@ -287,10 +287,13 @@ class S3Handler
 
             if ($this->objectExists($key)) {
 
+                $bucket = trim($bucket);
+                if(strlen($bucket) == 0) $bucket = $params['bucket'];
+
                 try {
 
                     $response = $client->getObject(array(
-                        'Bucket' => $params['bucket'],
+                        'Bucket' => $bucket,
                         'Key' => $key,
                         'SaveAs' => $savePath,
                     ));
