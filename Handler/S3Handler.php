@@ -343,6 +343,7 @@ class S3Handler
                     foreach ($response['Contents'] as $r) {
                         $output[] = array(
                             'Key' => $r['Key'],
+                            'LastModified' => new \DateTime($r['LastModified']),
                             'ETag' => str_replace('"', '', $r['ETag']),
                         );
                         $lastKey = $r['Key'];
