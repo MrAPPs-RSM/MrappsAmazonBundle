@@ -366,4 +366,30 @@ class S3Handler
 
         return $output;
     }
+
+    public function deleteObject($key = '', $bucket = '')
+    {
+        $key = trim($key);
+        $bucket = trim($bucket);
+
+        if (strlen($key) > 0) {
+            $params = $this->getParams();
+            $client = $this->getClient();
+
+            if(strlen($bucket) == 0) $bucket = $params['bucket'];
+
+            try {
+                $result = $client->deleteObject(array(
+                    'Bucket' => $bucket,
+                    'Key' => $key,
+                ))->toArray();
+            } catch (\Exception $ex) {
+                $result = array();
+            }
+
+            return $result;
+        }
+
+        return false;
+    }
 }
