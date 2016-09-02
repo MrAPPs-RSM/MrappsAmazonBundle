@@ -347,6 +347,7 @@ class S3Handler
                             'Key' => $r['Key'],
                             'LastModified' => new \DateTime($r['LastModified']),
                             'ETag' => str_replace('"', '', $r['ETag']),
+                            'Size' => intval($r['Size']),
                         );
                         $lastKey = $r['Key'];
                     }
