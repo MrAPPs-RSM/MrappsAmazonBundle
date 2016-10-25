@@ -314,7 +314,7 @@ class S3Handler
         $filePath = trim($filePath);
         $key = trim($key);
 
-        return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath)) ? $this->createObject($key, file_get_contents($filePath), $acl) : array();
+        return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath)) ? $this->createObject($key, file_get_contents($filePath), ['ACL' => $acl]) : array();
     }
 
     public function listObjectsInBucket($bucket = null, $prefix = '')
