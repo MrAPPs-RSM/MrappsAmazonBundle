@@ -172,7 +172,21 @@ class S3Handler
         return '';
     }
 
-    public function getObjectUrl($key = '', $force = false, $ignoreCdn = false)
+    /**
+     * see the doc: http://docs.aws.amazon.com/aws-sdk-php/v2/api/class-Aws.S3.S3Client.html
+     * $signedUrl = $client->getObjectUrl($bucket, 'data.txt', '+10 minutes');
+     */
+    public function getObjectUrlWithExpire($key, $expire, $force = false, $ignoreCdn = false)
+    {
+        return $this->getObjectUrl(
+            $key,
+            $force,
+            $ignoreCdn,
+            $expire
+        );
+    }
+
+    public function getObjectUrl($key = '', $force = false, $ignoreCdn = false, $expire = null)
     {
 
         $key = trim($key);
@@ -188,7 +202,9 @@ class S3Handler
             if ($cdnEnabled) {
                 return $urlCdn . '/' . $key;
             } else {
-                return ((bool)$force || $client->doesObjectExist($params['bucket'], $key)) ? $client->getObjectUrl($params['bucket'], $key) : '';
+                return ((bool)$force || $client->doesObjectExist($params['bucket'], $key))
+                    ? $client->getObjectUrl($params['bucket'], $key, $expire)
+                    : '';
             }
         }
 
