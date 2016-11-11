@@ -2,11 +2,11 @@
 
 namespace Mrapps\AmazonBundle\Handler;
 
-use Symfony\Component\DependencyInjection\Container;
-use Doctrine\ORM\EntityManager;
 use Aws\S3\S3Client;
+use Doctrine\ORM\EntityManager;
+use Mrapps\AmazonBundle\Interfaces\S3FileInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
-
 
 class S3Handler
 {
@@ -322,6 +322,14 @@ class S3Handler
         }
 
         return ($returnCompleteResponse) ? null : false;
+    }
+
+    public function uploadS3File(S3FileInterface $file) {
+    {
+        return $this->uploadObject(
+            $file->getAmazonS3Key(),
+            $file->getAmazonS3FilePath()
+        );
     }
 
     public function uploadObject($key = '', $filePath = '', $acl = 'public-read')
