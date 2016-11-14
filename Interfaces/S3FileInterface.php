@@ -6,5 +6,5 @@ interface S3FileInterface
 {
     public function getAmazonS3Key();
 
-    public function getAmazonS3FilePath();
+    public function getAmazonS3FileUrl();
 }

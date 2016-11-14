@@ -328,17 +328,18 @@ class S3Handler
     {
         return $this->uploadObject(
             $file->getAmazonS3Key(),
-            $file->getAmazonS3FilePath()
+            $file->getAmazonS3FileUrl()
         );
     }
 
     public function uploadObject($key = '', $filePath = '', $acl = 'public-read')
     {
-
         $filePath = trim($filePath);
         $key = trim($key);
 
-        return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath)) ? $this->createObject($key, file_get_contents($filePath), ['ACL' => $acl]) : array();
+        return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath))
+            ? $this->createObject($key, file_get_contents($filePath), ['ACL' => $acl])
+            : [ /* no content here */ ];
     }
 
     public function listObjectsInBucket($bucket = null, $prefix = '')
