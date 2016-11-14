@@ -327,8 +327,8 @@ class S3Handler
     public function uploadS3File(S3FileInterface $file)
     {
         return $this->uploadObject(
-            $file->getAmazonS3Key(),
-            $file->getAmazonS3FileUrl()
+            $file->getRemoteRelativePath(),
+            $file->getLocalPath()
         );
     }
 

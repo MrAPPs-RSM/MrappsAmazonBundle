@@ -4,7 +4,7 @@ namespace Mrapps\AmazonBundle\Interfaces;
 
 interface S3FileInterface
 {
-    public function getAmazonS3Key();
+    public function getRemoteRelativePath();
 
-    public function getAmazonS3FileUrl();
+    public function getLocalPath();
 }
