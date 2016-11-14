@@ -324,7 +324,7 @@ class S3Handler
         return ($returnCompleteResponse) ? null : false;
     }
 
-    public function uploadS3File(S3FileInterface $file) {
+    public function uploadS3File(S3FileInterface $file)
     {
         return $this->uploadObject(
             $file->getAmazonS3Key(),
