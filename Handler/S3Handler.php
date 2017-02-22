@@ -332,13 +332,16 @@ class S3Handler
         );
     }
 
-    public function uploadObject($key = '', $filePath = '', $acl = 'public-read')
+    public function uploadObject($key = '', $filePath = '', $acl = 'public-read', $options = null)
     {
         $filePath = trim($filePath);
         $key = trim($key);
+        
+        if(!is_array($options)) $options = [];
+        $options['ACL'] = $acl;
 
         return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath))
-            ? $this->createObject($key, file_get_contents($filePath), ['ACL' => $acl])
+            ? $this->createObject($key, file_get_contents($filePath), $options)
             : [ /* no content here */ ];
     }
 
