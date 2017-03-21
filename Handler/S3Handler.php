@@ -99,12 +99,13 @@ class S3Handler
                 'Key' => $key,
                 'Body' => $content,
             )))->toArray();
-
+            
             $client->waitUntilObjectExists(array('Bucket' => $params['bucket'], 'Key' => $key));
 
             //Aggiornamento etag Database
+            $now = new \DateTime();
             $etag = $this->getEtagForKey($key);
-            $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($key, $etag);
+            $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($key, $etag, $now);
 
         } catch (\Exception $ex) {
             $result = array();
@@ -135,8 +136,9 @@ class S3Handler
                 $client->waitUntilObjectExists(array('Bucket' => $destBucket, 'Key' => $dest));
 
                 //Aggiornamento etag Database
+                $now = new \DateTime();
                 $etag = $this->getEtagForKey($dest);
-                $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($dest, $etag);
+                $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($dest, $etag, $now);
             }
 
         } catch (\Exception $ex) {

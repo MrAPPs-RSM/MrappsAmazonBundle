@@ -13,7 +13,7 @@ use Mrapps\AmazonBundle\Entity\S3Object;
  */
 class S3ObjectRepository extends EntityRepository
 {
-    public function setEtag($key = '', $etag = '') {
+    public function setEtag($key = '', $etag = '', $updatedAt = null) {
         
         $key = trim($key);
         $etag = trim($etag);
@@ -30,6 +30,7 @@ class S3ObjectRepository extends EntityRepository
             }
             
             $object->setEtag($etag);
+            if(null !== $updatedAt) $object->setUpdatedAt($updatedAt);
             
             $em->persist($object);
             $em->flush($object);
@@ -46,6 +47,17 @@ class S3ObjectRepository extends EntityRepository
         if(strlen($key) > 0) {
             $object = $this->findOneBy(array('s3Key' => $key));
             return ($object !== null) ? $object->getEtag() : '';
+        }
+        
+        return '';
+    }
+    
+    public function getUpdatedAt($key = '') {
+        
+        $key = trim($key);
+        if(strlen($key) > 0) {
+            $object = $this->findOneBy(array('s3Key' => $key));
+            return ($object !== null) ? $object->getUpdatedAt() : null;
         }
         
         return '';

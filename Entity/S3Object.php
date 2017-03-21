@@ -32,6 +32,11 @@ class S3Object
      * @ORM\Column(name="etag", type="string", length=200, nullable=false)
      */
     protected $etag;
+    
+    /**
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
+     */
+    protected $updatedAt;
 
 
     /**
@@ -88,5 +93,29 @@ class S3Object
     public function getEtag()
     {
         return $this->etag;
+    }
+    
+    /**
+     * Set updated at
+     *
+     * @param \DateTime $updatedAt
+     *
+     * @return S3Object
+     */
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+    
+    /**
+     * Get updated at
+     *
+     * @return \DateTime
+     */
+    public function getUpdatedAt()
+    {
+        return $this->updatedAt;
     }
 }
