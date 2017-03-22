@@ -29,8 +29,8 @@ class S3ObjectRepository extends EntityRepository
                 $object->setS3Key($key);
             }
             
+            if($object->getEtag() !== $etag) $object->setUpdatedAt($updatedAt);
             $object->setEtag($etag);
-            if(null !== $updatedAt) $object->setUpdatedAt($updatedAt);
             
             $em->persist($object);
             $em->flush($object);
