@@ -13,21 +13,23 @@
         "MIT"
     ],
     "require" : {
-        "php": ">=5.3.9",
-        "symfony/symfony": ">=2.6",
-        "aws/aws-sdk-php": "2.8.*@dev"
+        "php": "7.4.*",
+        "doctrine/orm": "*",
+        "aws/aws-sdk-php": "3.*",
+        "liip/imagine-bundle": "^2.9",
+        "symfony/doctrine-bridge": "^5.4"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.21"
+        }
     },
     "autoload" : {
-        "psr-0" : {
-            "Mrapps\\AmazonBundle" : ""
+        "psr-4" : {
+            "Mrapps\\AmazonBundle\\" : "src/"
         }
     },
-    "target-dir" : "Mrapps/AmazonBundle",
-    "repositories" : [{
-    }],
-    "extra" : {
-    "branch-alias" : {
-            "dev-master" : "0.1-dev"
-        }
+    "require-dev": {
+        "symfony/phpunit-bridge": "v3.4.47"
     }
 }

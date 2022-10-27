@@ -1,4 +1,0 @@
-mrapps_amazon:
-    resource: "@MrappsAmazonBundle/Controller/"
-    type:     annotation
-    prefix:   /

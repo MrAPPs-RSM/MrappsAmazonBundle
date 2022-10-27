@@ -2,49 +2,65 @@
 
 namespace Mrapps\AmazonBundle\Handler;
 
+use Aws\Exception\MultipartUploadException;
+use Aws\S3\MultipartUploader;
+use Aws\S3\ObjectUploader;
 use Aws\S3\S3Client;
 use Doctrine\ORM\EntityManager;
+use Liip\ImagineBundle\Controller\ImagineController;
 use Mrapps\AmazonBundle\Interfaces\S3FileInterface;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 
 class S3Handler
 {
-    private $container;
-    private $em;
+    private EntityManager $em;
+    private ImagineController $imagineController;
 
-    public function __construct(Container $container, EntityManager $em)
+    private array $params;
+
+    private bool $cdnEnabled;
+    private string $cdnUrl;
+
+    public function __construct(EntityManager $em, ImagineController $imagineController, $access, $secret, $region, $defaultBucket, $cdnEnabled, $cdnUrl)
     {
-        $this->container = $container;
         $this->em = $em;
+        $this->imagineController = $imagineController;
+
+        $this->params = [
+            'access' => $access,
+            'secret' => $secret,
+            'region' => $region,
+            'bucket' => $defaultBucket
+        ];
+
+        $this->cdnEnabled = (bool) $cdnEnabled;
+        $this->cdnUrl = trim($cdnUrl, '/');
     }
 
-    private function getParams()
+    private function getParams(): array
     {
-
-        return array(
-            'access' => ($this->container->hasParameter('mrapps_amazon.parameters.access')) ? $this->container->getParameter('mrapps_amazon.parameters.access') : '',
-            'secret' => ($this->container->hasParameter('mrapps_amazon.parameters.secret')) ? $this->container->getParameter('mrapps_amazon.parameters.secret') : '',
-            'region' => ($this->container->hasParameter('mrapps_amazon.parameters.region')) ? $this->container->getParameter('mrapps_amazon.parameters.region') : '',
-            'bucket' => ($this->container->hasParameter('mrapps_amazon.parameters.default_bucket')) ? $this->container->getParameter('mrapps_amazon.parameters.default_bucket') : '',
-        );
+        return $this->params;
     }
 
-    private function getClient()
-    {
+    private function isCdnEnabled(): bool{
+        return $this->cdnEnabled && !empty($this->cdnUrl);
+    }
 
+    private function getClient(): S3Client
+    {
         $params = $this->getParams();
 
-        return S3Client::factory(array(
-            'key' => $params['access'],
-            'secret' => $params['secret'],
+        return new S3Client([
             'region' => $params['region'],
-        ));
+            'credentials' => [
+                'key' => $params['access'],
+                'secret' => $params['secret'],
+            ]
+        ]);
     }
 
-    public function objectExists($key, $bucket = '')
+    public function objectExists($key, $bucket = ''): bool
     {
-
         $key = trim($key);
         $bucket = trim($bucket);
         if (strlen($key) > 0) {
@@ -57,15 +73,13 @@ class S3Handler
         }
 
         return false;
-
     }
 
-    public function headObject($key, $bucket = '')
+    public function headObject($key, $bucket): ?array
     {
-
         $key = trim($key);
         $bucket = trim($bucket);
-        if (strlen($key) > 0) {
+        if (!empty($key) && !empty($bucket)) {
             $params = $this->getParams();
             $client = $this->getClient();
 
@@ -82,25 +96,10 @@ class S3Handler
         return null;
     }
 
-    public function createObject($key = '', $content = '', $options = array())
+    public function createObject($key = '', $content = '', $options = [])
     {
-
-        $params = $this->getParams();
-        $client = $this->getClient();
-
         try {
-
-            //Fix opzioni in ingresso
-            if (!is_array($options)) $options = array();
-            if (!isset($options['ACL'])) $options['ACL'] = 'public-read';
-
-            $result = $client->putObject(array_merge($options, array(
-                'Bucket' => $params['bucket'],
-                'Key' => $key,
-                'Body' => $content,
-            )))->toArray();
-            
-            $client->waitUntilObjectExists(array('Bucket' => $params['bucket'], 'Key' => $key));
+            $result = $this->uploadObject($key, $content, 'public-read', $options);
 
             //Aggiornamento etag Database
             $now = new \DateTime();
@@ -108,7 +107,7 @@ class S3Handler
             $this->em->getRepository('MrappsAmazonBundle:S3Object')->setEtag($key, $etag, $now);
 
         } catch (\Exception $ex) {
-            $result = array();
+            $result = [];
         }
 
         return $result;
@@ -116,7 +115,6 @@ class S3Handler
 
     public function copyObject($source, $dest, $sourceBucket = '', $destBucket = '')
     {
-
         $params = $this->getParams();
         $client = $this->getClient();
 
@@ -133,7 +131,7 @@ class S3Handler
                     'Key' => $dest,
                 ))->toArray();
 
-                $client->waitUntilObjectExists(array('Bucket' => $destBucket, 'Key' => $dest));
+                $client->waitUntil('ObjectExists', ['Bucket' => $destBucket, 'Key' => $dest]);
 
                 //Aggiornamento etag Database
                 $now = new \DateTime();
@@ -150,9 +148,11 @@ class S3Handler
 
     public function getObjectContent($key = '', $bucket = '')
     {
-
         $key = trim($key);
         $bucket = trim($bucket);
+
+        $output = '';
+
         if (strlen($key) > 0) {
 
             $params = $this->getParams();
@@ -162,16 +162,18 @@ class S3Handler
 
             if ($this->objectExists($key, $bucket)) {
 
-                $result = $client->getObject(array(
+                $result = $client->getObject([
                     'Bucket' => $bucket,
                     'Key' => $key,
-                ));
+                ]);
 
-                return (isset($result['Body'])) ? $result['Body'] . '' : '';
+                if(isset($result['Body'])){
+                    $output .= $result['Body'];
+                }
             }
         }
 
-        return '';
+        return $output;
     }
 
     /**
@@ -196,13 +198,8 @@ class S3Handler
             $params = $this->getParams();
             $client = $this->getClient();
 
-            //CDN params
-            $enableCdn = ($this->container->hasParameter('mrapps_amazon.cdn.enable')) ? (bool)$this->container->getParameter('mrapps_amazon.cdn.enable') : false;
-            $urlCdn = ($this->container->hasParameter('mrapps_amazon.cdn.url')) ? trim($this->container->getParameter('mrapps_amazon.cdn.url'), '/') : '';
-
-            $cdnEnabled = ($enableCdn && !$ignoreCdn && strlen($urlCdn) > 0);
-            if ($cdnEnabled) {
-                return $urlCdn . '/' . $key;
+            if ($this->isCdnEnabled()) {
+                return $this->cdnUrl . '/' . $key;
             } else {
                 return ((bool)$force || $client->doesObjectExist($params['bucket'], $key))
                     ? $client->getObjectUrl($params['bucket'], $key, $expire)
@@ -222,14 +219,8 @@ class S3Handler
 
             $urlDomain = "https://s3-" . $params["region"] . ".amazonaws.com/" . $params["bucket"];
 
-            //CDN params
-            $enableCdn = ($this->container->hasParameter('mrapps_amazon.cdn.enable')) ? (bool)$this->container->getParameter('mrapps_amazon.cdn.enable') : false;
-            $urlCdn = ($this->container->hasParameter('mrapps_amazon.cdn.url')) ? trim($this->container->getParameter('mrapps_amazon.cdn.url'), '/') : '';
-
             // RedirectResponse object
-            $imagemanagerResponse = $this->container
-                ->get('liip_imagine.controller')
-                ->filterAction(
+            $imagemanagerResponse = $this->imagineController->filterAction(
                     $request,
                     $key,      // original image you want to apply a filter to
                     $filter              // filter defined in config.yml
@@ -238,10 +229,8 @@ class S3Handler
             // string to put directly in the "src" of the tag <img>
             $absoluteUrl = $imagemanagerResponse->headers->get('location');
 
-
-            $cdnEnabled = ($enableCdn && strlen($urlCdn) > 0);
-            if ($cdnEnabled) {
-                return str_replace($urlDomain, $urlCdn, $absoluteUrl);
+            if ($this->isCdnEnabled()) {
+                return str_replace($urlDomain, $this->cdnUrl, $absoluteUrl);
             } else {
                 return $absoluteUrl;
             }
@@ -326,28 +315,58 @@ class S3Handler
         return ($returnCompleteResponse) ? null : false;
     }
 
-    public function uploadS3File(S3FileInterface $file)
+    public function uploadS3File(S3FileInterface $file): array
     {
         return $this->uploadObject(
-            $file->getRemoteRelativePath(),
-            $file->getLocalPath()
+            $file->getLocalPath(),
+            $file->getRemoteRelativePath()
         );
     }
 
-    public function uploadObject($key = '', $filePath = '', $acl = 'public-read', $options = null)
+    public function uploadObject($key, $source, $acl = 'public-read', $options = []): array
     {
-        $filePath = trim($filePath);
-        $key = trim($key);
-        
-        if(!is_array($options)) $options = [];
-        $options['ACL'] = $acl;
+        if (empty($key) || empty($source)) {
+            return [];
+        }
 
-        return (strlen($filePath) > 0 && strlen($key) > 0 && file_exists($filePath))
-            ? $this->createObject($key, file_get_contents($filePath), $options)
-            : [ /* no content here */ ];
+        $params = $this->getParams();
+        $client = $this->getClient();
+
+        if (isset($options['ACL'])) {
+            $acl = $options['ACL'];
+            unset($options['ACL']);
+        }
+
+        if (is_file($source)) {
+            $source = fopen($source, 'rb');
+        }
+
+        $uploader = new ObjectUploader(
+            $client,
+            $params['bucket'],
+            $key,
+            $source,
+            $acl,
+            $options
+        );
+
+        do {
+            try {
+                $result = $uploader->upload();
+            } catch (MultipartUploadException $e) {
+                rewind($source);
+                $uploader = new MultipartUploader($client, $source, [
+                    'state' => $e->getState(),
+                ]);
+            }
+        } while (!isset($result));
+
+        fclose($source);
+
+        return $result->toArray();
     }
 
-    public function listObjectsInBucket($bucket = null, $prefix = '')
+    public function listObjectsInBucket($bucket = null, $prefix = ''): array
     {
 
         $params = $this->getParams();
