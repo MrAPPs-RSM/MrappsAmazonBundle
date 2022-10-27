@@ -16,8 +16,7 @@
         "php": "7.4.*",
         "doctrine/orm": "*",
         "aws/aws-sdk-php": "3.*",
-        "liip/imagine-bundle": "^2.9",
-        "symfony/doctrine-bridge": "^5.4"
+        "liip/imagine-bundle": "^2.9"
     },
     "config": {
         "platform": {
@@ -30,6 +29,5 @@
         }
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "v3.4.47"
     }
 }
