@@ -3,7 +3,6 @@
 namespace Mrapps\AmazonBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
-use Mrapps\AmazonBundle\Entity\S3Object;
 
 /**
  * S3ObjectRepository
