@@ -25,13 +25,11 @@ class MrappsAmazonExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $definition = $container->getDefinition('mrapps.amazon.s3');
-
-        $definition->replaceArgument(2, $config['parameters']['access']);
-        $definition->replaceArgument(3, $config['parameters']['secret']);
-        $definition->replaceArgument(4, $config['parameters']['region']);
-        $definition->replaceArgument(5, $config['parameters']['default_bucket']);
-        $definition->replaceArgument(6, $config['cdn']['enable']);
-        $definition->replaceArgument(7, $config['cdn']['url']);
+        $container->setParameter('mrapps_amazon.parameters.access', $config['parameters']['access']);
+        $container->setParameter('mrapps_amazon.parameters.secret', $config['parameters']['secret']);
+        $container->setParameter('mrapps_amazon.parameters.region', $config['parameters']['region']);
+        $container->setParameter('mrapps_amazon.parameters.default_bucket', $config['parameters']['default_bucket']);
+        $container->setParameter('mrapps_amazon.cdn.enable', $config['cdn']['enable']);
+        $container->setParameter('mrapps_amazon.cdn.url', $config['cdn']['url']);
     }
 }

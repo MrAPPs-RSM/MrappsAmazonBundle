@@ -13,13 +13,20 @@ use Symfony\Component\HttpFoundation\Request;
 
 class S3Handler
 {
-    private EntityManager $em;
-    private ImagineController $imagineController;
+    /**@var EntityManager $em*/
+    private $em;
 
-    private array $params;
+    /**@var ImagineController $imagineController*/
+    private $imagineController;
 
-    private bool $cdnEnabled;
-    private string $cdnUrl;
+    /**@var array $params*/
+    private $params;
+
+    /**@var bool $cdnEnabled*/
+    private $cdnEnabled;
+
+    /**@var string $cdnUrl*/
+    private $cdnUrl;
 
     public function __construct(EntityManager $em, ImagineController $imagineController, $access, $secret, $region, $defaultBucket, $cdnEnabled, $cdnUrl)
     {
