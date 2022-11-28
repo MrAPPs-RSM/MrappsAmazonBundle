@@ -57,7 +57,9 @@ class S3Handler
     {
         $params = $this->getParams();
 
-        return new S3Client([
+        return new S3Client
+        ([
+            'version' => 'latest',
             'region' => $params['region'],
             'credentials' => [
                 'key' => $params['access'],
