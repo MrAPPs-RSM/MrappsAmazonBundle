@@ -3,7 +3,7 @@ services:
   'mrapps.amazon.s3':
       class: 'Mrapps\AmazonBundle\Handler\S3Handler'
       arguments:
-        - 'Doctrine\ORM\EntityManagerInterface'
+        - '@doctrine.orm.entity_manager'
         - '@liip_imagine.controller'
         - ''
         - ''
