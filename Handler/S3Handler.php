@@ -347,7 +347,10 @@ class S3Handler
         }
 
         if (is_file($source)) {
+            $isFile = true;
             $source = fopen($source, 'rb');
+        } else{
+            $isFile = false;
         }
 
         $uploader = new ObjectUploader(
@@ -370,7 +373,9 @@ class S3Handler
             }
         } while (!isset($result));
 
-        fclose($source);
+        if($isFile){
+            fclose($source);
+        }
 
         return $result->toArray();
     }
