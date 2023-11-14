@@ -346,7 +346,7 @@ class S3Handler
             unset($options['ACL']);
         }
 
-        if (is_file($source)) {
+        if (is_string($source) && strlen($source) < PHP_MAXPATHLEN && is_file($source)) {
             $isFile = true;
             $source = fopen($source, 'rb');
         } else{
