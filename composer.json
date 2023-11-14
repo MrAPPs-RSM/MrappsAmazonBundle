@@ -13,16 +13,11 @@
         "MIT"
     ],
     "require" : {
-        "php": "7.2.*",
+        "php": ">=7.2",
         "doctrine/orm": "*",
         "aws/aws-sdk-php": "3.*",
         "liip/imagine-bundle": "^1.3",
         "symfony/symfony": "v2.8.52"
-    },
-    "config": {
-        "platform": {
-            "php": "7.2.34"
-        }
     },
     "autoload" : {
         "psr-4" : {
